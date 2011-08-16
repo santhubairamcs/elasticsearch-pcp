@@ -1,6 +1,20 @@
 package com.aconex.elasticsearch.pcp;
 
-import com.custardsource.parfait.*;
+import static com.google.common.collect.Maps.newHashMap;
+
+import javax.measure.unit.SI;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
+import com.custardsource.parfait.CompositeMonitoringView;
+import com.custardsource.parfait.Counter;
+import com.custardsource.parfait.Monitorable;
+import com.custardsource.parfait.MonitorableRegistry;
+import com.custardsource.parfait.MonitoredCounter;
+import com.custardsource.parfait.MonitoredLongValue;
 import com.custardsource.parfait.dxm.IdentifierSourceSet;
 import com.custardsource.parfait.dxm.PcpMmvWriter;
 import com.custardsource.parfait.io.ByteCountingInputStream;
@@ -15,20 +29,11 @@ import com.custardsource.parfait.timing.EventTimer;
 import com.custardsource.parfait.timing.LoggerSink;
 import com.custardsource.parfait.timing.StepMeasurementSink;
 import com.custardsource.parfait.timing.ThreadMetricSuite;
+import com.google.common.collect.Lists;
 import org.apache.commons.lang.StringUtils;
 import org.elasticsearch.common.component.AbstractLifecycleComponent;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.index.shard.ShardId;
-
-import javax.measure.unit.SI;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
-import static com.google.common.collect.Maps.newHashMap;
 
 
 public class ParfaitService extends AbstractLifecycleComponent<Void> {
@@ -43,7 +48,7 @@ public class ParfaitService extends AbstractLifecycleComponent<Void> {
      *
      * TODO these 2 event groups are clashing, so preventing the other from starting properly.  We need an EventTimer per group by the looks of it.. ?
      */
-    private static final List<String> EVENT_GROUPS = Arrays.asList(INDEX_EVENT_GROUP, SEARCH_EVENT_GROUP);
+    private static final List<String> EVENT_GROUPS = Lists.newArrayList();//Arrays.asList(INDEX_EVENT_GROUP, SEARCH_EVENT_GROUP);
 
     private final MonitorableRegistry monitorableRegistry;
     private final SelfStartingMonitoringView selfStartingMonitoringView;
