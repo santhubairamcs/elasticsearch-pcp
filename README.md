@@ -18,7 +18,7 @@ http://oss.sgi.com/projects/pcp
 
 SGI still use this to monitor their large clusters.  And they are large indeed...
 
-elasticsearch-pcp utilises the open-source Parfait Java binding that helps export metrics of the JVM, and application-level metrics into the PCP system.  PCP combines these with Operating System and Hardware metrics to provide a holistic view of performance data.
+elasticsearch-pcp utilises the open-source [Parfait Java binding](http://code.google.com/p/parfait/) that helps export metrics of the JVM, and application-level metrics into the PCP system.  PCP combines these with Operating System and Hardware metrics to provide a holistic view of performance data.
 
 Prerequisites
 =============
