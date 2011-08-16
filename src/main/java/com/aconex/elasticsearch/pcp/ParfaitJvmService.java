@@ -39,7 +39,7 @@ public class ParfaitJvmService extends AbstractComponent {
         List<GarbageCollectorMXBean> garbageCollectorMXBeans = ManagementFactory.getGarbageCollectorMXBeans();
 
         for (final GarbageCollectorMXBean collectorMXBean : garbageCollectorMXBeans) {
-            String name = "jvm.memory." + collectorMXBean.getName().toLowerCase();
+            String name = "elasticsearch.jvm.memory." + collectorMXBean.getName().toLowerCase();
             String description = Joiner.on(",").join(collectorMXBean.getMemoryPoolNames());
 
             registerNewPollingMonitoredValue(name + ".count", description, new Supplier<Long>() {
