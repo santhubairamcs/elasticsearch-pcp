@@ -3,15 +3,20 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
     <groupId>com.aconex.elasticsearch</groupId>
     <artifactId>elasticsearch-pcp</artifactId>
     <version>1.0.0-SNAPSHOT</version>
+    <url>http://github.com/Aconex/elasticsearch-pcp.git</url>
+    <description>ElasticSearch integration with PCP (Performance Co-Pilot)</description>
     <properties>
         <elasticsearch.version>0.17.6</elasticsearch.version>
         <parfait.version>0.3.0-SNAPSHOT</parfait.version>
     </properties>
-
+    <scm>
+        <connection>scm:git:git://github.com/Aconex/elasticsearch-pcp.git</connection>
+        <url>scm:git:http://github.com/Aconex/elasticsearch-pcp.git</url>
+        <developerConnection>scm:git:git@github.com:Aconex/elasticsearch-pcp.git</developerConnection>
+    </scm>
     <build>
         <plugins>
             <plugin>
