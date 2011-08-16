@@ -14,7 +14,7 @@ Introduction
 ============
 PCP (Performance Co-Pilot) is a performance monitoring system developed by SGI many moons ago.  It's not well known, but it is ridiculously powerful, and designed for scale.
 
-(http://oss.sgi.org/projects/pcp)
+http://oss.sgi.com/projects/pcp
 
 SGI still use this to monitor their large clusters.  And they are large indeed...
 
@@ -24,7 +24,7 @@ Prerequisites
 =============
 First, ensure you have PCP (Performance Co-Pilot) installed locally for you system. There are installs for the vast majority of needs, including Windows!
 
-(ftp://oss.sgi.com/projects/pcp/download/)
+ftp://oss.sgi.com/projects/pcp/download/
 
 You can verify everything is working correctly by just running 'pcp' to show currently installed version info:
 
