@@ -8,9 +8,18 @@ import com.aconex.elasticsearch.pcp.ParfaitModule;
 import com.aconex.elasticsearch.pcp.ParfaitService;
 import org.elasticsearch.common.component.LifecycleComponent;
 import org.elasticsearch.common.inject.Module;
+import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.plugins.AbstractPlugin;
 
 public class PCPPlugin extends AbstractPlugin {
+
+    private static final String PCP_ENABLED = "pcp.enabled";
+    private final Settings settings;
+
+    public PCPPlugin(Settings settings) {
+        this.settings = settings;
+    }
+
     public String name() {
         return "pcp";
     }
@@ -22,18 +31,18 @@ public class PCPPlugin extends AbstractPlugin {
     @Override
     public Collection<Class<? extends Module>> modules() {
         Collection<Class<? extends Module>> modules = newArrayList();
-        modules.add(ParfaitModule.class);
-        //if (settings.getAsBoolean("memcached.enabled", true)) {
-        //}
+        if (settings.getAsBoolean(PCP_ENABLED, true)) {
+            modules.add(ParfaitModule.class);
+        }
         return modules;
     }
 
     @Override
     public Collection<Class<? extends LifecycleComponent>> services() {
         Collection<Class<? extends LifecycleComponent>> services = newArrayList();
-        services.add(ParfaitService.class);
-        //if (settings.getAsBoolean("memcached.enabled", true)) {
-        //}
+        if (settings.getAsBoolean(PCP_ENABLED, true)) {
+            services.add(ParfaitService.class);
+        }
         return services;
     }
 }
