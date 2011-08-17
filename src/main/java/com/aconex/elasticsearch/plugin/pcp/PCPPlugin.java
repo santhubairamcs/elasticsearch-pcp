@@ -44,6 +44,7 @@ public class PCPPlugin extends AbstractPlugin {
         if (settings.getAsBoolean(PCP_ENABLED, true)) {
             services.add(ParfaitService.class);
             services.add(ParfaitJvmService.class);
+            services.add(ParfaitNetworkService.class);
         }
         return services;
     }

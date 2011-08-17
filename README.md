@@ -54,10 +54,25 @@ Once you have ElasticSearch running, you'll be able to see the metrics appear:
 
     $ pminfo mmv.elasticsearch
 
+    mmv.elasticsearch.network.retransSegs
+    mmv.elasticsearch.network.passiveOpens
+    mmv.elasticsearch.network.outSegs
+    mmv.elasticsearch.network.outRsts
+    mmv.elasticsearch.network.inSegs
+    mmv.elasticsearch.network.inErrs
+    mmv.elasticsearch.network.estabResets
+    mmv.elasticsearch.network.currEstab
+    mmv.elasticsearch.network.attemptFails
+    mmv.elasticsearch.network.activeOpens
+    mmv.elasticsearch.jvm.memory.used
     mmv.elasticsearch.jvm.memory.parnew.time
     mmv.elasticsearch.jvm.memory.parnew.count
+    mmv.elasticsearch.jvm.memory.max
+    mmv.elasticsearch.jvm.memory.init
     mmv.elasticsearch.jvm.memory.concurrentmarksweep.time
     mmv.elasticsearch.jvm.memory.concurrentmarksweep.count
+    mmv.elasticsearch.jvm.memory.committed
+
 
 
 Roadmap

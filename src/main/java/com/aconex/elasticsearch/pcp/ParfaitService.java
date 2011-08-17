@@ -3,8 +3,13 @@ package com.aconex.elasticsearch.pcp;
 import static com.google.common.collect.Maps.newHashMap;
 
 import javax.measure.unit.SI;
+import java.beans.BeanInfo;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +20,8 @@ import com.custardsource.parfait.Monitorable;
 import com.custardsource.parfait.MonitorableRegistry;
 import com.custardsource.parfait.MonitoredCounter;
 import com.custardsource.parfait.MonitoredLongValue;
+import com.custardsource.parfait.PollingMonitoredValue;
+import com.custardsource.parfait.ValueSemantics;
 import com.custardsource.parfait.dxm.IdentifierSourceSet;
 import com.custardsource.parfait.dxm.PcpMmvWriter;
 import com.custardsource.parfait.io.ByteCountingInputStream;
@@ -29,6 +36,7 @@ import com.custardsource.parfait.timing.EventTimer;
 import com.custardsource.parfait.timing.LoggerSink;
 import com.custardsource.parfait.timing.StepMeasurementSink;
 import com.custardsource.parfait.timing.ThreadMetricSuite;
+import com.google.common.base.Supplier;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang.StringUtils;
 import org.elasticsearch.common.component.AbstractLifecycleComponent;
@@ -38,14 +46,11 @@ import org.elasticsearch.index.shard.ShardId;
 
 public class ParfaitService extends AbstractLifecycleComponent<Void> {
 
-    public static final String SEARCH_EVENT_GROUP = "search" ;
+    public static final String SEARCH_EVENT_GROUP = "search";
     public static final String INDEX_EVENT_GROUP = "index";
 
 
     /**
-     *
-     *
-     *
      * TODO these 2 event groups are clashing, so preventing the other from starting properly.  We need an EventTimer per group by the looks of it.. ?
      */
     private static final List<String> EVENT_GROUPS = Lists.newArrayList();//Arrays.asList(INDEX_EVENT_GROUP, SEARCH_EVENT_GROUP);
@@ -55,10 +60,13 @@ public class ParfaitService extends AbstractLifecycleComponent<Void> {
 
     private static final int ELASTICSEARCH_PCP_CLUSTER_IDENTIFIER = 0xB01; /*NG BO1NG - funny... ok you had to be there*/
     private final Map<String, EventTimer> eventTimers = newHashMap();
+    private int updateFrequency;
 
     public ParfaitService(Settings settings) {
         super(settings);
         monitorableRegistry = new MonitorableRegistry();
+        this.updateFrequency = settings.getAsInt("pcp.polling.frequency", 5000);
+
         Boolean isData = settings.getAsBoolean("node.data", false);
         Boolean isClient = settings.getAsBoolean("node.client", false);
         boolean isServer = isData || !isClient;
@@ -66,7 +74,7 @@ public class ParfaitService extends AbstractLifecycleComponent<Void> {
         String nodeType = isServer ? "server" : "client";
 
         // TODO remove this debug rubbish
-        System.out.printf("isData=%s, isClient=%s, isServer=%s, nodeType=%s\n", isData, isClient, isServer, nodeType);
+        this.logger.info("isData=%s, isClient=%s, isServer=%s, nodeType=%s\n", isData, isClient, isServer, nodeType);
 
         final PcpMmvWriter mmvWriter = new PcpMmvWriter("elasticsearch-" + nodeType + ".mmv", IdentifierSourceSet.DEFAULT_SET);
         mmvWriter.setClusterIdentifier(ELASTICSEARCH_PCP_CLUSTER_IDENTIFIER);
@@ -86,7 +94,7 @@ public class ParfaitService extends AbstractLifecycleComponent<Void> {
         boolean enableContentionCollection = false;
 
 
-        for (String eventGroup: EVENT_GROUPS) {
+        for (String eventGroup : EVENT_GROUPS) {
             EventTimer eventTimer = new EventTimer("elasticsearch", monitorableRegistry, ThreadMetricSuite.withDefaultMetrics(), enableCpuCollection, enableContentionCollection, sinks);
             eventTimer.registerMetric(eventGroup);
             eventTimers.put(eventGroup, eventTimer);
@@ -110,6 +118,51 @@ public class ParfaitService extends AbstractLifecycleComponent<Void> {
         return (T) monitorableRegistry.registerOrReuse(monitorable);
     }
 
+    public void registerNewPollingMonitoredValue(String name, String description, Supplier<Long> propertySupplier, ValueSemantics valueSemantics) {
+        new PollingMonitoredValue(name, description, monitorableRegistry, updateFrequency, propertySupplier, valueSemantics);
+    }
+
+    public void registerMetricsForStatsObject(final Class<?> clazz, final Object dataSource, String metricNameFormat) {
+        registerMetricsForStatsObject(clazz, new Supplier<Object>() {
+            @Override
+            public Object get() {
+                return dataSource;
+            }
+        }, metricNameFormat);
+
+    }
+
+    public void registerMetricsForStatsObject(final Class<?> clazz, final Supplier<Object> dataSource, String metricNameFormat) {
+        try {
+            BeanInfo beanInfo = Introspector.getBeanInfo(clazz);
+            PropertyDescriptor[] propertyDescriptors = beanInfo.getPropertyDescriptors();
+
+            for (final PropertyDescriptor pd : propertyDescriptors) {
+                if (pd.getPropertyType().equals(long.class)) {
+                    Supplier<Long> propertySupplier = new Supplier<Long>() {
+                        @Override
+                        public Long get() {
+                            Method readMethod = pd.getReadMethod();
+                            try {
+                                return (Long) readMethod.invoke(dataSource.get());
+                            } catch (Exception e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
+                    };
+
+                    // This get registered automatically via construction
+                    // TODO reconsider metric namespace and descriptions
+                    registerNewPollingMonitoredValue(String.format(metricNameFormat, pd.getName()), "TODO", propertySupplier, ValueSemantics.CONSTANT);
+                }
+            }
+
+        } catch (IntrospectionException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
     public ByteCountingOutputStream wrapAsCountingOutputStream(OutputStream out, Counter existingCounter) {
         return new ByteCountingOutputStream(out, existingCounter);
     }
@@ -118,15 +171,18 @@ public class ParfaitService extends AbstractLifecycleComponent<Void> {
         return new ByteCountingInputStream(is, existingCounter);
     }
 
-    @Override protected void doStart() {
+    @Override
+    protected void doStart() {
         selfStartingMonitoringView.start();
     }
 
-    @Override protected void doStop() {
+    @Override
+    protected void doStop() {
         selfStartingMonitoringView.stop();
     }
 
-    @Override protected void doClose() {
+    @Override
+    protected void doClose() {
     }
 
     public MonitoredCounterBuilder forShard(ShardId shardId) {
