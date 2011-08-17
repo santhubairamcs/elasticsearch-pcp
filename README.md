@@ -8,7 +8,13 @@ The Why
 
 BigDesk is excellent, but can you do retrospective analysis on what happened last week?  Can you write a rule that sniffs for certain hardware, operating system, JVM, or ElasticSearch metrics to link into, say, Nagios for alarming?  No?
 
-You need PCP.
+"What about OpenTSDB?"
+
+Yeah!  Now that's an awesome product I have to say.  Those guys at StumbleUpon are brilliant.  Alas, OpenTSDB's major issue is that it needs HBase running, which is one of my personal _favourite_ technologies, but isn't a trivial exercise in deployment and maintenance.  It's a very very very large and powerful hammer.  A Formula One engine; with it's corresponding care and feeding required.
+
+If you want to use ElasticSearch, and you want power, but without too much complexity, you need PCP.
+
+"M'Kay, so WTF _IS_ PCP then..?"
 
 Introduction
 ============
@@ -22,11 +28,11 @@ elasticsearch-pcp utilises the open-source [Parfait Java binding](http://code.go
 
 Prerequisites
 =============
-First, ensure you have PCP (Performance Co-Pilot) installed locally for you system. There are installs for the vast majority of needs, including Windows!
+First, ensure you have PCP (Performance Co-Pilot) installed locally for you system. There are installs for the vast majority of needs, including Windows! (you really weren't expecting that were you... :) )
 
 ftp://oss.sgi.com/projects/pcp/download/
 
-You can verify everything is working correctly by just running 'pcp' to show currently installed version info:
+Download your distribution and install.  You can verify everything is working correctly by just running 'pcp' to show currently installed version info:
 
     $ pcp
     Performance Co-Pilot configuration on psmiths-macbook-pro.local:
@@ -74,12 +80,105 @@ Once you have ElasticSearch running, you'll be able to see the metrics appear:
     mmv.elasticsearch.jvm.memory.committed
 
 
+The 'mmv' prefix is because the source data coming into PCP is via the MMV (Memory-Mapped Values) architecture.
+
+
+"Ok, that's just metric names, show me the values.. ?"
+
+    $ pminfo -f mmv.elasticsearch.network
+
+    mmv.elasticsearch.network.retransSegs
+        value 1524
+
+    mmv.elasticsearch.network.passiveOpens
+        value 1389
+
+    mmv.elasticsearch.network.outSegs
+        value 789121
+
+    mmv.elasticsearch.network.outRsts
+        value -1
+
+    mmv.elasticsearch.network.inSegs
+        value 756782
+
+    mmv.elasticsearch.network.inErrs
+        value 0
+
+    mmv.elasticsearch.network.estabResets
+        value 187
+
+    mmv.elasticsearch.network.currEstab
+        value 56
+
+    mmv.elasticsearch.network.attemptFails
+        value 399
+
+    mmv.elasticsearch.network.activeOpens
+        value 12088
+
+You can tell PCP to print the current values this way, and you can specify a node in the metric namespace hierarchy and it will print all nodes below as well.
+
+"Ok, that's just current values, what about plotting them over time?"
+
+    $ pmdumptext -X -t5sec  mmv.elasticsearch.jvm
+    [ 1] mmv.elasticsearch.jvm.memory.used
+    [ 2] mmv.elasticsearch.jvm.memory.parnew.time
+    [ 3] mmv.elasticsearch.jvm.memory.parnew.count
+    [ 4] mmv.elasticsearch.jvm.memory.max
+    [ 5] mmv.elasticsearch.jvm.memory.init
+    [ 6] mmv.elasticsearch.jvm.memory.concurrentmarksweep.time
+    [ 7] mmv.elasticsearch.jvm.memory.concurrentmarksweep.count
+    [ 8] mmv.elasticsearch.jvm.memory.committed
+
+                 Column	     1	     2	     3	     4	     5	     6	     7	     8
+    Wed Aug 17 22:28:06	 3.59M	     ?	     ?	 1.07G	 0.27G	     ?	     ?	 0.27G
+    Wed Aug 17 22:28:11	 3.59M	 0.00 	 0.00 	 1.07G	 0.27G	 0.00 	 0.00 	 0.27G
+    Wed Aug 17 22:28:16	 3.59M	 0.00 	 0.00 	 1.07G	 0.27G	 0.00 	 0.00 	 0.27G
+    Wed Aug 17 22:28:51	 3.59M	 0.00 	 0.00 	 1.07G	 0.27G	 0.00 	 0.00 	 0.27G
+    Wed Aug 17 22:28:56	 3.59M	 0.00 	 0.00 	 1.07G	 0.27G	 0.00 	 0.00 	 0.27G
+    Wed Aug 17 22:29:01	 3.59M	 0.00 	 0.00 	 1.07G	 0.27G	 0.00 	 0.00 	 0.27G
+    Wed Aug 17 22:29:06	 3.59M	 6.60 	 0.60 	 1.07G	 0.27G	 0.00 	 0.00 	 0.27G
+    Wed Aug 17 22:29:11	 3.59M	17.01 	 1.40 	 1.07G	 0.27G	 0.00 	 0.00 	 0.27G
+    Wed Aug 17 22:29:16	 3.59M	57.00 	 6.00 	 1.07G	 0.27G	 0.00 	 0.00 	 0.27G
+    Wed Aug 17 22:29:21	 3.59M	78.40 	 8.60 	 1.07G	 0.27G	 1.80 	 0.20 	 0.27G
+    Wed Aug 17 22:29:26	 3.59M	65.60 	 9.80 	 1.07G	 0.27G	 0.00 	 0.00 	 0.27G
+    Wed Aug 17 22:29:31	 3.59M	72.80 	 9.60 	 1.07G	 0.27G	 1.80 	 0.20 	 0.27G
+    Wed Aug 17 22:29:36	 3.59M	73.80 	 9.40 	 1.07G	 0.27G	 0.00 	 0.00 	 0.27G
+    Wed Aug 17 22:29:41	 3.59M	69.40 	 9.80 	 1.07G	 0.27G	 1.40 	 0.20 	 0.27G
+    Wed Aug 17 22:29:46	 3.59M	56.40 	 7.20 	 1.07G	 0.27G	 2.40 	 0.20 	 0.27G
+    Wed Aug 17 22:29:51	 3.59M	33.19 	 5.60 	 1.07G	 0.27G	 0.00 	 0.00 	 0.27G
+    Wed Aug 17 22:29:56	 3.59M	52.38 	 7.80 	 1.07G	 0.27G	 0.00 	 0.00 	 0.27G
+    Wed Aug 17 22:30:01	 3.59M	60.23 	 9.20 	 1.07G	 0.27G	 2.00 	 0.20 	 0.27G
+    Wed Aug 17 22:30:06	 3.59M	 1.00 	 0.20 	 1.07G	 0.27G	 0.00 	 0.00 	 0.27G
+    Wed Aug 17 22:30:11	 3.59M	 0.00 	 0.00 	 1.07G	 0.27G	 0.00 	 0.00 	 0.27G
+
+
+This shows the JVM metrics plotted over 5 second (-t5sec), while I input some data into ES.  You can see the different Garbage collectors count & time metrics exposed as rates (counts/second, time/second)
+
+"Well, that's lovely... but it's just text... And I'm a Chart/Graph sort of guy/girl"
+
+PCP includes a pmchart tool.  You need to grab the PCP GUI installer from the above download links for *Nix, or the PCP Glider package for Windows.  You can launch pmchart and browse the namespace, or you can configure things on the command line (it has a config file format too, read the man page).
+
+Try this:
+
+    $ pmchart -t5 -c CPU -c DISK -c DISKBYTES -h localhost
+
+You will get a pmchart view launched, connected directly to your localhost which is running PCP, plotting the CPU, Disk (IO) and Disk(bytes) views automatically.  You can then use File->New Chart and browse the 'mmv.elasticsearch' namespace to create new charts.  You can save the views for retrieval later.
+
+"Ok, that's prettier for sure... But BigDesk shows me this?  How is this better?"
+
+PCP comes with many other powerful tools:
+
+* pmlogger - Ability to automatically log source data to a binary file for retrospective analysis.  All the tools can either connect and read from the live data, or process a PCP archive to look over the data retrospectively.  If you want to review something that happened yesterday in fine detail, you can.
+* pmie - Create inference rules to trap conditions of interest.  High CPU?  # Searches more than you're expecting?  Perhaps you want to alarm on this, or execute a script.  the PMIE inference engine built into PCP is unbelievable powerful, and can invoke practically any action you like.  We use it to feed into Nagios alarms.
+* pmlogsummary - TODO
 
 Roadmap
 =======
 
-* Much more JVM metrics
-* Search metrics: counters & time
-* indexing metrics - number of add/update, delete's per second, on a per-index basis with roll up.  You'll be able to see which indexes are 'hot'
+* Expose Much more JVM metrics out to PCP
+* Search metrics: counters & time, broken down by shards being hit and the CPU utilisation accounting - show how you can spot if you're got 'hot' shards/hosts.
+* Indexing metrics - number of add/update, delete's per second, on a per-index basis with roll up.  You'll be able to see which indexes are 'hot'
 
 and lots more
