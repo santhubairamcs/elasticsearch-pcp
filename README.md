@@ -174,6 +174,8 @@ Try this:
 
 You will get a pmchart view launched, connected directly to your localhost which is running PCP, plotting the CPU, Disk (IO) and Disk(bytes) views automatically.  You can then use File->New Chart and browse the 'mmv.elasticsearch' namespace to create new charts.  You can save the views for retrieval later.
 
+*TODO embedded image*
+
 "Ok, that's prettier for sure... But BigDesk shows me this?  How is this better?"
 ---------------------------------------------------------------------------------
 
