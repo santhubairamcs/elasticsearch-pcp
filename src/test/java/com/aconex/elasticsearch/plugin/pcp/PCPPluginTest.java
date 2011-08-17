@@ -39,7 +39,7 @@ public class PCPPluginTest {
 
     @Test
     public void testServices() throws Exception {
-        assertEquals(pcpPlugin.services().size(), 1);
+        assertEquals(pcpPlugin.services().size(), 2);
 
         whenPcpEnabled(false);
         assertEquals(pcpPlugin.services().size(), 0);

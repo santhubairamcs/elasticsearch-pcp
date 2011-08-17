@@ -16,19 +16,18 @@ import com.custardsource.parfait.PollingMonitoredValue;
 import com.custardsource.parfait.ValueSemantics;
 import com.google.common.base.Joiner;
 import com.google.common.base.Supplier;
-import org.elasticsearch.common.component.AbstractComponent;
+import org.elasticsearch.ElasticSearchException;
+import org.elasticsearch.common.component.AbstractLifecycleComponent;
 import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.settings.Settings;
 
-public class ParfaitJvmService extends AbstractComponent {
+public class ParfaitJvmService extends AbstractLifecycleComponent<Void> {
     private final int updateFrequency;
     private final MonitorableRegistry monitorableRegistry;
-    private final ParfaitService parfaitService;
 
     @Inject public ParfaitJvmService(Settings settings, ParfaitService parfaitService) {
         super(settings);
-        this.updateFrequency = settings.getAsInt("parfait.polling.frequency", 5000);
-        this.parfaitService = parfaitService;
+        this.updateFrequency = settings.getAsInt("pcp.polling.frequency", 5000);
         this.monitorableRegistry = parfaitService.getMonitorableRegistry();
 
         registerMemoryMetrics();
@@ -91,5 +90,20 @@ public class ParfaitJvmService extends AbstractComponent {
 
     private void registerNewPollingMonitoredValue(String name, String description, Supplier<Long> propertySupplier, ValueSemantics valueSemantics) {
         new PollingMonitoredValue(name, description, monitorableRegistry, updateFrequency, propertySupplier, valueSemantics);
+    }
+
+    @Override
+    protected void doStart() throws ElasticSearchException {
+
+    }
+
+    @Override
+    protected void doStop() throws ElasticSearchException {
+
+    }
+
+    @Override
+    protected void doClose() throws ElasticSearchException {
+
     }
 }

@@ -27,6 +27,7 @@ public class ParfaitModule extends AbstractModule {
         final ParfaitJvmService parfaitJvmService = new ParfaitJvmService(settings, parfaitService);
 
         bind(ParfaitService.class).toInstance(parfaitService);
+        bind(ParfaitJvmService.class).toInstance(parfaitJvmService);
 
         //bindSearchMetrics(parfaitService);
 

@@ -4,6 +4,7 @@ import static org.elasticsearch.common.collect.Lists.newArrayList;
 
 import java.util.Collection;
 
+import com.aconex.elasticsearch.pcp.ParfaitJvmService;
 import com.aconex.elasticsearch.pcp.ParfaitModule;
 import com.aconex.elasticsearch.pcp.ParfaitService;
 import org.elasticsearch.common.component.LifecycleComponent;
@@ -42,6 +43,7 @@ public class PCPPlugin extends AbstractPlugin {
         Collection<Class<? extends LifecycleComponent>> services = newArrayList();
         if (settings.getAsBoolean(PCP_ENABLED, true)) {
             services.add(ParfaitService.class);
+            services.add(ParfaitJvmService.class);
         }
         return services;
     }
