@@ -4,17 +4,20 @@
 
 The Why
 =======
-"I'm  why shouldn't I just use BigDesk?"
+"Umm... why shouldn't I just use BigDesk?"
+------------------------------------------
 
 BigDesk is excellent, but can you do retrospective analysis on what happened last week?  Can you write a rule that sniffs for certain hardware, operating system, JVM, or ElasticSearch metrics to link into, say, Nagios for alarming?  No?
 
 "What about OpenTSDB?"
+----------------------
 
 Yeah!  Now that's an awesome product I have to say.  Those guys at StumbleUpon are brilliant.  Alas, OpenTSDB's major issue is that it needs HBase running, which is one of my personal _favourite_ technologies, but isn't a trivial exercise in deployment and maintenance.  It's a very very very large and powerful hammer.  A Formula One engine; with it's corresponding care and feeding required.
 
 If you want to use ElasticSearch, and you want power, but without too much complexity, you need PCP.
 
 "M'Kay, so WTF _IS_ PCP then..?"
+--------------------------------
 
 Introduction
 ============
@@ -43,9 +46,9 @@ Download your distribution and install.  You can verify everything is working co
          pmcd: Version 3.4.0-1, 3 agents
          pmda: pmcd mmv darwin
 
-Installing
-==========
-You should be able to install this via the ElasticSearch plugin system, so assuming your shell is located inside the $ELASTICSEARCH_HOME directory then:
+Installing elasticsearch-pcp
+============================
+You should be able to install elasticsearch-pcp via the ElasticSearch plugin system, so assuming your shell is located inside the $ELASTICSEARCH_HOME directory then:
 
     cd bin
     plugin install Aconex/elasticsearch-pcp
@@ -84,6 +87,7 @@ The 'mmv' prefix is because the source data coming into PCP is via the MMV (Memo
 
 
 "Ok, that's just metric names, show me the values.. ?"
+------------------------------------------------------
 
     $ pminfo -f mmv.elasticsearch.network
 
@@ -120,6 +124,9 @@ The 'mmv' prefix is because the source data coming into PCP is via the MMV (Memo
 You can tell PCP to print the current values this way, and you can specify a node in the metric namespace hierarchy and it will print all nodes below as well.
 
 "Ok, that's just current values, what about plotting them over time?"
+---------------------------------------------------------------------
+
+pminfo just displays one-shot values.  You use pmdumptext to output timeseries info:
 
     $ pmdumptext -X -t5sec  mmv.elasticsearch.jvm
     [ 1] mmv.elasticsearch.jvm.memory.used
@@ -157,6 +164,7 @@ You can tell PCP to print the current values this way, and you can specify a nod
 This shows the JVM metrics plotted over 5 second (-t5sec), while I input some data into ES.  You can see the different Garbage collectors count & time metrics exposed as rates (counts/second, time/second)
 
 "Well, that's lovely... but it's just text... And I'm a Chart/Graph sort of guy/girl"
+-------------------------------------------------------------------------------------
 
 PCP includes a pmchart tool.  You need to grab the PCP GUI installer from the above download links for *Nix, or the PCP Glider package for Windows.  You can launch pmchart and browse the namespace, or you can configure things on the command line (it has a config file format too, read the man page).
 
@@ -167,6 +175,7 @@ Try this:
 You will get a pmchart view launched, connected directly to your localhost which is running PCP, plotting the CPU, Disk (IO) and Disk(bytes) views automatically.  You can then use File->New Chart and browse the 'mmv.elasticsearch' namespace to create new charts.  You can save the views for retrieval later.
 
 "Ok, that's prettier for sure... But BigDesk shows me this?  How is this better?"
+---------------------------------------------------------------------------------
 
 PCP comes with many other powerful tools:
 
